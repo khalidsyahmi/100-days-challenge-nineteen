@@ -3,6 +3,7 @@ const express = require("express");
 const db = require("../data/database");
 //hash
 const bcrypt = require("bcryptjs");
+const { localsName } = require("ejs");
 const router = express.Router();
 
 router.get("/", function (req, res) {
@@ -168,22 +169,25 @@ router.post("/login", async function (req, res) {
   //save session before redirect()
   req.session.save(function () {
     console.log("user is authenticated");
-    res.redirect("/admin");
+    res.redirect("/profile");
   });
 });
 
 router.get("/admin", async function (req, res) {
-  if (!req.session.isAuthenticated) {
+  //req.session.isAuthenticated replaced
+  if (!res.locals.isAuth) {
     // !req.session.user
     return res.status(401).render("401");
   }
 
-  const user = await db
+  //no need to get user anymore
+  /*  const user = await db
     .getDb("auth-demo")
     .collection("users")
-    .findOne({ _id: req.session.user.id });
+    .findOne({ _id: req.session.user.id }); */
 
-  if (!user || !user.isAdmin) {
+  //user || !user.isAdmin
+  if (!res.locals.isAdmin) {
     return res.status(403).render("403");
   }
 
@@ -191,7 +195,8 @@ router.get("/admin", async function (req, res) {
 });
 
 router.get("/profile", function (req, res) {
-  if (!req.session.isAuthenticated) {
+  //req.session.isAuthenticated
+  if (!res.locals.isAuth) {
     return res.status(401).render("401");
   }
   res.render("profile");
